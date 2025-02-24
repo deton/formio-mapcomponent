@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>formio-mapcomponent sample</title>
+  <!-- based on https://formio.github.io/formio.js/app/builder.html -->
+  <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">-->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap/dist/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/formiojs@4.21.6/dist/formio.full.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/formiojs@4.21.6/dist/formio.full.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deton/leaflet-locationfilter@master/src/locationfilter.css" />
+  <script src="https://cdn.jsdelivr.net/gh/deton/leaflet-locationfilter@master/src/locationfilter.js"></script>
+  <script type='importmap'>
+  {
+     "imports": {
+       "mapboundingbox": "./MapBoundingBox/MapBoundingBox.js"
+     }
+  }
+  </script>
+</head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+  <div class="col-sm-8">
+    <h3 class="text-center text-muted">The <a href="https://github.com/formio/formio.js" target="_blank">Form Builder</a> allows you to build a <select class="form-control" id="form-select" style="display: inline-block; width: 150px;"><option value="form">Form</option><option value="wizard">Wizard</option><option value="pdf">PDF</option></select></h3>
+    <div id="builder"></div>
+  </div>
+  <div class="col-sm-4">
+    <h3 class="text-center text-muted">as JSON Schema</h3>
+    <div class="card card-body bg-light jsonviewer">
+      <pre id="json"></pre>
+    </div>
+  </div>
+</div>
+<div class="row mt-4">
+  <div class="col-sm-8 offset-sm-2">
+    <h3 class="text-center text-muted">which <a href="https://github.com/formio/ngFormio" target="_blank">Renders as a Form</a> in your Application</h3>
+    <div id="formio" class="card card-body bg-light"></div>
+  </div>
+  <div class="clearfix"></div>
+</div>
+<div class="row mt-4">
+  <div class="col-sm-8 offset-sm-2">
+    <h3 class="text-center text-muted">which creates a Submission JSON</h3>
+    <div class="card card-body bg-light jsonviewer">
+      <pre id="subjson"></pre>
+    </div>
+  </div>
+  <div class="clearfix"></div>
+</div>
+<script type="module">
+import MapBoundingBox from 'mapboundingbox';
+Formio.use({
+  components: {
+    mapboundingbox: MapBoundingBox
+  }
+});
+
+var jsonElement = document.getElementById('json');
+var formElement = document.getElementById('formio');
+var subJSON = document.getElementById('subjson');
+var builder = null;
+var setDisplay = function(display) {
+  if (builder) {
+    builder.destroy();
+    document.getElementById("builder").innerHTML = '';
+  }
+  Formio.builder(document.getElementById("builder"), {
+    display: display,
+    components: [],
+  }).then(function(instance) {
+    builder = instance;
+    var onForm = function(form) {
+      form.on('change', function() {
+        subJSON.innerHTML = '';
+        subJSON.appendChild(document.createTextNode(JSON.stringify(form.submission, null, 4)));
+      });
+    };
+
+    var onBuild = function(build) {
+      jsonElement.innerHTML = '';
+      formElement.innerHTML = '';
+      jsonElement.appendChild(document.createTextNode(JSON.stringify(instance.schema, null, 4)));
+      Formio.createForm(formElement, instance.form).then(onForm);
+    };
+
+    var onReady = function() {
+      var jsonElement = document.getElementById('json');
+      var formElement = document.getElementById('formio');
+      instance.on('change', onBuild);
+    };
+
+    instance.ready.then(onReady);
+  });
+};
+
+// Handle the form selection.
+var formSelect = document.getElementById('form-select');
+formSelect.addEventListener("change", function() {
+  setDisplay(this.value);
+});
+
+setDisplay('form');
+</script>
+</div>
+</body>
+</html>
