@@ -146,11 +146,6 @@ export default class MapBoundingBox extends Field {
     render(content) {
         //console.log('render', this.id, content);
         return super.render(`
-          <!--<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-                integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-                crossorigin=""/>
-          <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/deton/leaflet-locationfilter@master/src/locationfilter.css" />
-          -->
           <div ref="mapbbRef">MapBoundingBox component</div>`
         );
     }
@@ -208,13 +203,26 @@ export default class MapBoundingBox extends Field {
         this.locationFilter = new L.LocationFilter({
             showButtons: false,
             enable: true,
-            //bounds: bounds,
         }).addTo(this.map);
         this.locationFilter.on('change', (ev) => {
             //console.log('onchange', this.id, ev.bounds.toBBoxString());
             this.updateValue(ev.bounds.toBBoxString());
         });
         this.setValue(this.component.bbox);
+
+        L.Control.geocoder({
+            defaultMarkGeocode: false
+        }).on('markgeocode', ev => {
+            //console.log('markgeocode', ev);
+            //this.geocodeInput = ev.target._lastGeocode;
+            const bounds = this.locationFilter.getBounds();
+            const psw = this.map.latLngToContainerPoint(bounds.getSouthWest());
+            const pne = this.map.latLngToContainerPoint(bounds.getNorthEast());
+            this.map.panTo(ev.geocode.center);
+            const sw = this.map.containerPointToLatLng(psw);
+            const ne = this.map.containerPointToLatLng(pne);
+            this.locationFilter.setBounds(L.latLngBounds(sw, ne));
+        }).addTo(this.map);
         return super.attach(element);
     }
     
