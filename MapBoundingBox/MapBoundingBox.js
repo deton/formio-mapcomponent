@@ -185,12 +185,16 @@ export default class MapBoundingBox extends Field {
         
         if (this.map) {
             //console.log('already map created', this.id);
+            //return super.attach(element);
+            if (this.geocoder) {
+                this.geocoder.off();
+                this.geocoder.remove();
+            }
             if (this.locationFilter) {
                 this.locationFilter.off();
                 this.locationFilter.remove();
             }
             this.map.remove();
-            //return super.attach(element);
         }
         this.map = L.map(this.refs.mapbbRef, {
             //center: this.component.center.split(',').map(Number),
@@ -210,7 +214,7 @@ export default class MapBoundingBox extends Field {
         });
         this.setValue(this.component.bbox);
 
-        L.Control.geocoder({
+        this.geocoder = L.Control.geocoder({
             defaultMarkGeocode: false
         }).on('markgeocode', ev => {
             //console.log('markgeocode', ev);
@@ -236,6 +240,11 @@ export default class MapBoundingBox extends Field {
      */
     detach() {
         //console.log('detach', this.id);
+        if (this.geocoder) {
+            this.geocoder.off();
+            this.geocoder.remove();
+            this.geocoder = undefined;
+        }
         if (this.locationFilter) {
             this.locationFilter.off();
             this.locationFilter.remove();
