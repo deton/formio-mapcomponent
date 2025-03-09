@@ -20,10 +20,13 @@
   <script src="https://cdn.jsdelivr.net/gh/deton/leaflet-locationfilter@master/src/locationfilter.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw.js"></script>
   <script type='importmap'>
   {
      "imports": {
-       "mapboundingbox": "./MapBoundingBox/MapBoundingBox.js"
+       "mapboundingbox": "./MapBoundingBox/MapBoundingBox.js",
+       "mapdraw": "./MapDraw/MapDraw.js"
      }
   }
   </script>
@@ -60,9 +63,11 @@
 </div>
 <script type="module">
 import MapBoundingBox from 'mapboundingbox';
+import MapDraw from 'mapdraw';
 Formio.use({
   components: {
-    mapboundingbox: MapBoundingBox
+    mapboundingbox: MapBoundingBox,
+    mapdraw: MapDraw,
   }
 });
 
