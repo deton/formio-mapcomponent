@@ -195,18 +195,7 @@ export default class MapDraw extends Field {
         this.refs.mapDrawRef.style.width = '100%';
         this.refs.mapDrawRef.style.height = this.component.height;
         
-        if (this.map) {
-            //console.log('already map created', this.id);
-            if (this.locationFilter) {
-                this.locationFilter.off();
-                this.locationFilter.remove();
-            }
-            this.map.off('draw:created', this.onDrawCreated, this);
-            this.map.off('draw:edited', this.onDrawEdited, this);
-            this.map.off('draw:deleted', this.onDrawDeleted, this);
-            this.map.remove();
-            //return super.attach(element);
-        }
+        this.removeMap();
         this.map = L.map(this.refs.mapDrawRef, {
             preferCanvas: true,
         });
@@ -256,16 +245,16 @@ export default class MapDraw extends Field {
         this.updateValue(this.drawnItemsFG.toGeoJSON());
     }
 
-    /**
-     * Called when the component has been detached. This is where you would destroy
-     * any other instance variables to free up memory. Any event registered with
-     * "addEventListener" will automatically be detached so no need to remove them
-     * here. 
-     *
-     * @return - A Promise that resolves when this component is done detaching.
-     */
-    detach() {
-        //console.log('detach', this.id);
+    removeMap() {
+        if (this.drawnItemsFG) {
+            this.drawnItemsFG.clearLayers();
+            this.drawnItemsFG.remove();
+            this.drawnItemsFG = undefined;
+        }
+        if (this.drawControl) {
+            this.drawControl.remove();
+            this.drawControl = undefined;
+        }
         if (this.locationFilter) {
             this.locationFilter.off();
             this.locationFilter.remove();
@@ -278,6 +267,19 @@ export default class MapDraw extends Field {
             this.map.remove();
             this.map = undefined;
         }
+    }
+
+    /**
+     * Called when the component has been detached. This is where you would destroy
+     * any other instance variables to free up memory. Any event registered with
+     * "addEventListener" will automatically be detached so no need to remove them
+     * here. 
+     *
+     * @return - A Promise that resolves when this component is done detaching.
+     */
+    detach() {
+        //console.log('detach', this.id);
+        this.removeMap();
         return super.detach();
     }
  
