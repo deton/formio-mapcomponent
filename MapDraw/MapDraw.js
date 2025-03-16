@@ -34,6 +34,36 @@ export default class MapDraw extends Field {
                         placeholder: 'west_lng,south_lat,east_lng,north_lat',
                         defaultValue: '139.75776,35.67771,139.77424,35.68469',
                     },
+                    {
+                        key: 'draw_line',
+                        type: 'checkbox',
+                        label: 'Draw Line',
+                        defaultValue: true,
+                    },
+                    {
+                        key: 'draw_polygon',
+                        type: 'checkbox',
+                        label: 'Draw Polygon',
+                        defaultValue: true,
+                    },
+                    {
+                        key: 'draw_rectangle',
+                        type: 'checkbox',
+                        label: 'Draw Rectangle',
+                        defaultValue: true,
+                    },
+                    {
+                        key: 'draw_circle',
+                        type: 'checkbox',
+                        label: 'Draw Circle',
+                        defaultValue: true,
+                    },
+                    {
+                        key: 'draw_marker',
+                        type: 'checkbox',
+                        label: 'Draw Marker',
+                        defaultValue: true,
+                    },
                 ],
             },
             {
@@ -229,6 +259,11 @@ export default class MapDraw extends Field {
         this.drawControl = new L.Control.Draw({
             draw: {
                 circlemarker: false,
+                polyline: this.component.draw_line,
+                polygon: this.component.draw_polygon,
+                rectangle: this.component.draw_rectangle,
+                circle: this.component.draw_circle,
+                marker: this.component.draw_marker,
             },
             edit: {
                 featureGroup: this.drawnItemsFG,
