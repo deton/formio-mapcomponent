@@ -43,6 +43,13 @@ export default class MapDraw extends Field {
                         key: 'defaultValue',
                         ignore: true,
                     },
+                    {
+                        key: 'geojson',
+                        type: 'textarea',
+                        label: 'GeoJSON to edit',
+                        defaultValue: '{"type": "FeatureCollection", "features": []}',
+                        editor: 'ace',
+                    }
                 ],
             },
         ], ...extend);
@@ -65,7 +72,7 @@ export default class MapDraw extends Field {
             bboxkey: null,
             bbox: '139.75776,35.67771,139.77424,35.68469',
             height: '480px', // default height
-            geojson: {},
+            geojson: '{"type": "FeatureCollection", "features": []}',
         }, ...extend);
     }
     
@@ -125,6 +132,9 @@ export default class MapDraw extends Field {
             if (!this.component.bbox) {
                 this.component.bbox = '139.75776,35.67771,139.77424,35.68469';
             }
+        }
+        if (!this.component.geojson) {
+            this.component.geojson = '{"type": "FeatureCollection", "features": []}';
         }
         //console.log('init', this.id);
     }
@@ -199,6 +209,7 @@ export default class MapDraw extends Field {
         this.map = L.map(this.refs.mapDrawRef, {
             preferCanvas: true,
         });
+        // TODO: customize baseLayer, overlays by this.component properties.
         L.tileLayer('https://tile.openstreetmap.jp/styles/osm-bright/{z}/{x}/{y}.png', {
           attribution: '<a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
         }).addTo(this.map);
@@ -216,6 +227,9 @@ export default class MapDraw extends Field {
         this.drawnItemsFG = new L.FeatureGroup();
         this.map.addLayer(this.drawnItemsFG);
         this.drawControl = new L.Control.Draw({
+            draw: {
+                circlemarker: false,
+            },
             edit: {
                 featureGroup: this.drawnItemsFG,
             }
@@ -233,11 +247,20 @@ export default class MapDraw extends Field {
         ev.layer.feature = ev.layer.feature || {type: 'Feature'};
         ev.layer.feature.properties = ev.layer.feature.properties || {};
         ev.layer.feature.properties.drawtype = ev.layerType;
+        if (ev.layerType === 'circle') {
+            ev.layer.feature.properties.radius = ev.layer.getRadius();
+        }
         this.drawnItemsFG.addLayer(ev.layer);
         this.updateValue(this.drawnItemsFG.toGeoJSON());
     }
 
     onDrawEdited(ev) {
+        //console.log('onDrawEdited', ev, this);
+        ev.layers.eachLayer(layer => {
+            if (layer instanceof L.Circle) {
+                layer.feature.properties.radius = layer.getRadius();
+            }
+        });
         this.updateValue(this.drawnItemsFG.toGeoJSON());
     }
 
@@ -315,9 +338,9 @@ export default class MapDraw extends Field {
         let defaultValue = super.defaultValue;
         if (!defaultValue) {
             if (this.component.geojson) {
-                defaultValue = this.component.geojson;
+                defaultValue = JSON.parse(this.component.geojson);
             } else {
-                defaultValue = {};
+                defaultValue = {"type": "FeatureCollection", "features": []};
             }
         }
         return defaultValue;
@@ -370,9 +393,29 @@ export default class MapDraw extends Field {
         if (!value) {
             value = this.defaultValue;
         }
+        this.drawImport(value);
         return super.setValue(value, flags);
     }
-    
+
+    drawImport(geojson) {
+        this.drawnItemsFG.clearLayers();
+        const gjlayer = L.geoJson(geojson);
+        gjlayer.eachLayer(layer => {
+            //console.log('gjlayer1', layer);
+            if (layer.feature?.properties?.drawtype === 'rectangle') {
+                const rect = L.rectangle(layer.getBounds());
+                rect.feature = layer.feature;
+                layer = rect;
+            } else if (layer.feature?.properties?.drawtype === 'circle' && layer.feature?.properties?.radius) {
+                const circle = L.circle(layer.getLatLng(), layer.feature.properties.radius);
+                circle.feature = layer.feature;
+                layer = circle;
+            }
+            // XXX: color differs between imported and drawn items
+            this.drawnItemsFG.addLayer(layer);
+        });
+    }
+
     /**
      * Sets the value for only this index of the component. This is useful when you have
      * the "multiple" flag set for this component and only wish to tell this component
