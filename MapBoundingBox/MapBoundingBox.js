@@ -212,7 +212,7 @@ export default class MapBoundingBox extends Field {
             //console.log('onchange', this.id, ev.bounds.toBBoxString());
             this.updateValue(ev.bounds.toBBoxString());
         });
-        this.setValue(this.component.bbox);
+        this.setValue(null); // draw map using getValue() or defaultValue
 
         this.geocoder = L.Control.geocoder({
             defaultMarkGeocode: false
@@ -337,13 +337,15 @@ export default class MapBoundingBox extends Field {
      */
     setValue(value, flags = {}) {
         //console.log('setValue', this.id, value, flags);
-        if (!value) {
-            value = this.defaultValue;
-        }
+        value = value || this.getValue() || this.defaultValue;
         const bbox = value.split(',').map(Number);
         const bounds = L.latLngBounds([[bbox[1], bbox[0]], [bbox[3], bbox[2]]])
-        this.locationFilter.setBounds(bounds);
-        this.map.fitBounds(bounds);
+        if (this.locationFilter) {
+            this.locationFilter.setBounds(bounds);
+        }
+        if (this.map) {
+            this.map.fitBounds(bounds);
+        }
         return super.setValue(value, flags);
     }
     
