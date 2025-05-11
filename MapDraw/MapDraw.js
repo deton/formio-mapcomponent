@@ -243,16 +243,7 @@ export default class MapDraw extends Field {
         L.tileLayer('https://tile.openstreetmap.jp/styles/osm-bright/{z}/{x}/{y}.png', {
           attribution: '<a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
         }).addTo(this.map);
-        const bbox = this.component.bbox.split(',').map(Number);
-        const bounds = L.latLngBounds([[bbox[1], bbox[0]], [bbox[3], bbox[2]]])
-        this.map.fitBounds(bounds);
-        this.locationFilter = new L.LocationFilter({
-            showButtons: false,
-            enable: true,
-            locked: true,
-            fixed: true,
-            bounds: bounds,
-        }).addTo(this.map);
+        this.setBBox(this.component.bbox);
 
         this.drawnItemsFG = new L.FeatureGroup();
         this.map.addLayer(this.drawnItemsFG);
@@ -433,6 +424,9 @@ export default class MapDraw extends Field {
     }
 
     drawImport(geojson) {
+        if (!this.drawnItemsFG) {
+            return;
+        }
         this.drawnItemsFG.clearLayers();
         const gjlayer = L.geoJson(geojson);
         gjlayer.eachLayer(layer => {
@@ -481,5 +475,25 @@ export default class MapDraw extends Field {
     updateValue(value, flags = {}) {
         //console.log('updateValue', this.id, value, flags);
         return super.updateValue(value, flags);
+    }
+
+    setBBox(value) {
+        if (!this.map) {
+            return;
+        }
+        const bbox = value.split(',').map(Number);
+        const bounds = L.latLngBounds([[bbox[1], bbox[0]], [bbox[3], bbox[2]]])
+        this.map.fitBounds(bounds);
+        if (this.locationFilter) {
+            this.locationFilter.setBounds(bounds);
+        } else {
+            this.locationFilter = new L.LocationFilter({
+                showButtons: false,
+                enable: true,
+                locked: true,
+                fixed: true,
+                bounds: bounds,
+            }).addTo(this.map);
+        }
     }
 }
