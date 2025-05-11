@@ -18,13 +18,6 @@ export default class MapDraw extends Field {
                         defaultValue: '480px',
                     },
                     {
-                        key: 'bboxkey',
-                        type: 'textfield',
-                        weight: 5,
-                        input: true,
-                        label: 'Key of MapBoundingBox component',
-                    },
-                    {
                         key: 'bbox',
                         type: 'textfield',
                         weight: 6,
@@ -99,7 +92,6 @@ export default class MapDraw extends Field {
             type: 'mapdraw',
             label: 'MapDraw',
             key: 'mapdraw',
-            bboxkey: null,
             bbox: '139.75776,35.67771,139.77424,35.68469',
             height: '480px', // default height
             geojson: '{"type": "FeatureCollection", "features": []}',
@@ -147,21 +139,8 @@ export default class MapDraw extends Field {
         if (!this.component.height) {
             this.component.height = '480px';
         }
-        if (!this.component.bboxkey && this.currentForm) {
-            const comps = Utils.searchComponents(this.currentForm.components, {
-                'type': 'mapboundingbox',
-            });
-            if (comps) {
-                this.component.bboxkey = comps[0].path;
-            }
-        }
         if (!this.component.bbox) {
-            if (this.component.bboxkey) {
-                this.component.bbox = this.data[this.component.bboxkey];
-            }
-            if (!this.component.bbox) {
-                this.component.bbox = '139.75776,35.67771,139.77424,35.68469';
-            }
+            this.component.bbox = '139.75776,35.67771,139.77424,35.68469';
         }
         if (!this.component.geojson) {
             this.component.geojson = '{"type": "FeatureCollection", "features": []}';
@@ -424,9 +403,6 @@ export default class MapDraw extends Field {
     }
 
     drawImport(geojson) {
-        if (!this.drawnItemsFG) {
-            return;
-        }
         this.drawnItemsFG.clearLayers();
         const gjlayer = L.geoJson(geojson);
         gjlayer.eachLayer(layer => {
