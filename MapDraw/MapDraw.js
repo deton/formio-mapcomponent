@@ -22,10 +22,16 @@ export default class MapDraw extends Field {
                         type: 'textfield',
                         weight: 6,
                         input: true,
-                        label: 'Default Bounding Box',
+                        label: 'Default Bounding Box of Location Filter',
                         tooltip: 'Bounding box coordinates in west_lng,south_lat,east_lng,north_lat format',
                         placeholder: 'west_lng,south_lat,east_lng,north_lat',
                         defaultValue: '139.75776,35.67771,139.77424,35.68469',
+                    },
+                    {
+                        key: 'show_bbox',
+                        type: 'checkbox',
+                        label: 'Show bounding box of location filter',
+                        defaultValue: true,
                     },
                     {
                         key: 'draw_line',
@@ -465,7 +471,7 @@ export default class MapDraw extends Field {
         } else {
             this.locationFilter = new L.LocationFilter({
                 showButtons: false,
-                enable: true,
+                enable: this.component.show_bbox,
                 locked: true,
                 fixed: true,
                 bounds: bounds,
