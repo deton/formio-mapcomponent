@@ -26,7 +26,8 @@
   {
      "imports": {
        "mapboundingbox": "./MapBoundingBox/MapBoundingBox.js",
-       "mapdraw": "./MapDraw/MapDraw.js"
+       "mapdraw": "./MapDraw/MapDraw.js",
+       "slider": "./Slider/Slider.js"
      }
   }
   </script>
@@ -64,10 +65,12 @@
 <script type="module">
 import MapBoundingBox from 'mapboundingbox';
 import MapDraw from 'mapdraw';
+import Slider from 'slider';
 Formio.use({
   components: {
     mapboundingbox: MapBoundingBox,
     mapdraw: MapDraw,
+    slider: Slider,
   }
 });
 
